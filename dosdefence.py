@@ -1,5 +1,8 @@
 # from functions.variable import dos_defence, penalty, dos_maximum
 from function import GetConfig
+from dotenv import load_dotenv
+
+load_dotenv()
 
 dos_defence = {}
 penalty = int(GetConfig('penalty'))
