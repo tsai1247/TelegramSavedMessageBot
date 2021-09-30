@@ -1,5 +1,5 @@
 from dosdefence import *
-from os import getenv
+from os import device_encoding, getenv
 from function import *
 import sqlite3
 from interact_with_imgur import uploadAndGetPhoto
@@ -55,7 +55,9 @@ def setVal(update, bot):
     if(isDos(update)): return
     userID = update.message.from_user.id
     
-    if str(userID) not in getenv('DEVELOPER_ID'): return
+    developer = getenv('DEVELOPER_ID')
+    if (str(userID) not in developer or developer == '' or developer == '*') and GetConfig('isAddDeleteOpen')=='0': return
+    
     
     text = ' '.join(update.message.text.split(' ')[1:])
 
@@ -75,7 +77,8 @@ def add(update, bot):
     if(isDos(update)): return
     userID = update.message.from_user.id
     
-    if str(userID) not in getenv('DEVELOPER_ID') and GetConfig('isAddDeleteOpen')=='0': return
+    developer = getenv('DEVELOPER_ID')
+    if (str(userID) not in developer or developer == '' or developer == '*') and GetConfig('isAddDeleteOpen')=='0': return
     
     userStatus.update({userID:"waitName"})
     Send(update, "輸入名字", force=True)
@@ -163,9 +166,11 @@ def delete(update, bot):
         print(dos_defence)
         return
     userID = update.message.from_user.id
-    if str(userID) == getenv('DEVELOPER_ID'):
-        userStatus.update({userID:"delName"})
-        Send(update, "輸入名字", force=True)
+    developer = getenv('DEVELOPER_ID')
+    if (str(userID) not in developer or developer == '' or developer == '*') and GetConfig('isAddDeleteOpen')=='0': return
+    
+    userStatus.update({userID:"delName"})
+    Send(update, "輸入名字", force=True)
 
 def callback(update, bot):
     replyText = update.callback_query.data.split(" ")
