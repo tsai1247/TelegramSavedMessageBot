@@ -54,9 +54,9 @@ def list(update, bot):
 def setVal(update, bot):
     if(isDos(update)): return
     userID = update.message.from_user.id
-    
+
     developer = getenv('DEVELOPER_ID')
-    if (str(userID) not in developer or developer == '' or developer == '*') and GetConfig('isAddDeleteOpen')=='0': return
+    if (str(userID) not in developer or developer == '' or developer == '*'): return
     
     
     text = ' '.join(update.message.text.split(' ')[1:])
