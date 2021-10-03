@@ -40,3 +40,13 @@ def GetConfig(name: str):
     sql.close()
 
     return data
+
+def isDeveloper(userID, allowOpen = True):
+    developer = getenv('DEVELOPER_ID')
+    if(allowOpen):
+        return str(userID) in developer or developer == '' or developer == '*' or GetConfig('isAddDeleteOpen')=='1'
+    else:
+        return str(userID) in developer or developer == '' or developer == '*'
+
+def getUserID(update):
+    return update.message.from_user.id

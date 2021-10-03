@@ -1,5 +1,5 @@
 from dosdefence import *
-from os import device_encoding, getenv
+from os import getenv
 from function import *
 import sqlite3
 from interact_with_imgur import uploadAndGetPhoto
@@ -23,9 +23,27 @@ def help(update, bot):
     if(isDos(update)): return
     Send(update, GetConfig("helpText"))
 
+def report(update, bot):
+    if(isDos(update)): return
+    userID = getUserID(update)
+    userStatus.update({userID:"waitReport"})
+    Send(update, "輸入回報", force=True)
+
+def getReport(update, bot):
+    if(isDos(update)): return
+    userID = getUserID(update)
+    
+    if(not isDeveloper(userID, False)): return
+    sql = sqlite3.connect( 'Report.db' )
+    cur = sql.cursor()
+    cur.execute("Select * from reports")
+    allReport = cur.fetchall()
+    for text in allReport:
+        Send(update, text[0])
+
 def list(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     sql = sqlite3.connect( getenv("DATABASENAME") )
     cur = sql.cursor()
     
@@ -53,10 +71,9 @@ def list(update, bot):
 
 def setVal(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
 
-    developer = getenv('DEVELOPER_ID')
-    if (str(userID) not in developer or developer == '' or developer == '*'): return
+    if(not isDeveloper(userID, False)): return
     
     
     text = ' '.join(update.message.text.split(' ')[1:])
@@ -75,17 +92,16 @@ def setVal(update, bot):
 
 def add(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     
-    developer = getenv('DEVELOPER_ID')
-    if (str(userID) not in developer or developer == '' or developer == '*') and GetConfig('isAddDeleteOpen')=='0': return
+    if(not isDeveloper(userID)): return
     
     userStatus.update({userID:"waitName"})
     Send(update, "輸入名字", force=True)
 
 def getRandomReply(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     text = update.message.text.split(' ')
     if len(text)==1:
         userStatus.update({userID:"waitDetail"})
@@ -94,7 +110,7 @@ def getRandomReply(update, bot):
         randomReply(update)
 
 def randomReply(update):
-    userID = update.message.from_user.id
+    userID = getUserID(update)
 
     againRange = float(GetConfig('askAgainRange'))
     probability = random.random()
@@ -114,7 +130,7 @@ def randomReply(update):
 
 def finding(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     text = update.message.text.split(' ')
     if(len(text)==1):
         userStatus.update({userID:"findName"})
@@ -124,7 +140,7 @@ def finding(update, bot):
     findBody(update, text)
 
 def findBody(update, text):
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     text = pureString(text)
 
     sql = sqlite3.connect( getenv("DATABASENAME") )
@@ -165,10 +181,9 @@ def delete(update, bot):
     if(isDos(update)): 
         print(dos_defence)
         return
-    userID = update.message.from_user.id
-    developer = getenv('DEVELOPER_ID')
-    if (str(userID) not in developer or developer == '' or developer == '*') and GetConfig('isAddDeleteOpen')=='0': return
-    
+    userID = getUserID(update)
+    if(not isDeveloper(userID)): return
+
     userStatus.update({userID:"delName"})
     Send(update, "輸入名字", force=True)
 
@@ -202,7 +217,7 @@ def callback(update, bot):
 
 def cancel(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     if userID in userStatus:
         del userStatus[userID]
     if userID in addName:
@@ -218,7 +233,7 @@ def cancel(update, bot):
 
 def getText(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     text = update.message.text
     print(text)
 
@@ -255,17 +270,28 @@ def getText(update, bot):
             del userStatus[userID]
         elif state == 'waitDetail':
             randomReply(update)
-        
+
+        elif state == 'waitReport':
+            sql = sqlite3.connect( 'Report.db' ) 
+            cur = sql.cursor()
+            cur.execute("Insert into reports values('{0}')".format(text))
+            sql.commit()
+            cur.close()
+            sql.close()
+            Send(update, "完成回報")
+            if userID in userStatus:
+                del userStatus[userID]
+
 def getPhoto(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     
     if(userStatus[userID]=='waitContent'):
         Send(update, '不要壓縮，傳檔案', True)
 
 def getFile(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
 
     if(userStatus[userID]=='waitContent' and userID not in addImg):
         Send(update, '上傳中...')
@@ -277,7 +303,7 @@ def getFile(update, bot):
     
 def endAdd(update, bot):
     if(isDos(update)): return
-    userID = update.message.from_user.id
+    userID = getUserID(update)
     if(userStatus[userID]=='waitContent'):
         sql = sqlite3.connect( getenv("DATABASENAME") ) 
         cur = sql.cursor()

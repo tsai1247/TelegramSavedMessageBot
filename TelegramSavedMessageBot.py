@@ -4,6 +4,7 @@ import os
 from requests.api import delete
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from Command import *
+from AddCommandDeclare import *
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -40,6 +41,10 @@ def main():
 
     # 指令取消
     updater.dispatcher.add_handler(CommandHandler('cancel', cancel))
+
+    # 回報
+    updater.dispatcher.add_handler(CommandHandler('report', report))
+    updater.dispatcher.add_handler(CommandHandler('getReport', getReport))
     
 
 # 其他類型回覆
@@ -56,6 +61,7 @@ def main():
     # 按鈕
     updater.dispatcher.add_handler(CallbackQueryHandler(callback))
 
+    AdditionCommand(updater)
 
 # Bot Start
     print("Bot Server Running...")
