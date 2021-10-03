@@ -27,7 +27,7 @@ def report(update, bot):
     if(isDos(update)): return
     userID = getUserID(update)
     userStatus.update({userID:"waitReport"})
-    Send(update, "輸入回報", force=True)
+    Reply(update, "輸入回報", force=True)
 
 def getReport(update, bot):
     if(isDos(update)): return
@@ -60,14 +60,14 @@ def list(update, bot):
 
 
     if(len(allPhoto)==0):
-        Send(update, "目前沒有東西喔，請使用 /add 來新增")
+        Reply(update, "目前沒有東西喔，請使用 /add 新增")
     else:
         userUpdate.update({userID: update})
         buttons = []
         for i in range(0, len(text), 3):
             buttons.append([InlineKeyboardButton(s, callback_data = "{0} {1}".format(s, userID)) for s in text[i:min(i+3, len(text))]])
 
-        update.message.reply_text("現在有：", reply_markup = InlineKeyboardMarkup(buttons))
+        SendButton(update, "現在有：", buttons)
 
 def setVal(update, bot):
     if(isDos(update)): return
@@ -97,7 +97,7 @@ def add(update, bot):
     if(not isDeveloper(userID)): return
     
     userStatus.update({userID:"waitName"})
-    Send(update, "輸入名字", force=True)
+    Reply(update, "輸入名字", force=True)
 
 def getRandomReply(update, bot):
     if(isDos(update)): return
@@ -105,7 +105,7 @@ def getRandomReply(update, bot):
     text = update.message.text.split(' ')
     if len(text)==1:
         userStatus.update({userID:"waitDetail"})
-        Send(update, "輸入問題", force=True)
+        Reply(update, "輸入問題", force=True)
     else:
         randomReply(update)
 
@@ -117,12 +117,12 @@ def randomReply(update):
     successful = random.random()-probability
 
     if(successful<-againRange):
-        Send(update, "Yes")
+        Reply(update, "Yes")
     elif (successful>againRange):
-        Send(update, "No")
+        Reply(update, "No")
     else:
         userStatus.update({userID:"waitDetail"})
-        Send(update, "Ask me again", True)
+        Reply(update, "Ask me again", True)
         return
         
     if userID in userStatus:
@@ -134,7 +134,7 @@ def finding(update, bot):
     text = update.message.text.split(' ')
     if(len(text)==1):
         userStatus.update({userID:"findName"})
-        Send(update, "輸入名字", force=True)
+        Reply(update, "輸入名字", force=True)
         return
     text = ' '.join(text[1:])
     findBody(update, text)
@@ -173,9 +173,7 @@ def findBody(update, text):
     buttons = []
     for i in range(0, len(nameList), 3):
         buttons.append([InlineKeyboardButton(s, callback_data = "{0} {1}".format(s, userID)) for s in nameList[i:min(i+3, len(nameList))]])
-
-    update.message.reply_text("猜你想查：",
-    reply_markup = InlineKeyboardMarkup(buttons))
+    SendButton(update, "猜你想查：", buttons)
 
 def delete(update, bot):
     if(isDos(update)): 
@@ -185,7 +183,7 @@ def delete(update, bot):
     if(not isDeveloper(userID)): return
 
     userStatus.update({userID:"delName"})
-    Send(update, "輸入名字", force=True)
+    Reply(update, "輸入名字", force=True)
 
 def callback(update, bot):
     replyText = update.callback_query.data.split(" ")
@@ -232,7 +230,7 @@ def cancel(update, bot):
     if userID in userUpdate:
         del userUpdate[userID]
 
-    Send(update, "指令取消。")
+    Reply(update, "指令取消。")
 
 def getText(update, bot):
     if(isDos(update)): return
@@ -245,8 +243,7 @@ def getText(update, bot):
         print(state)
         if state == 'waitName':
             addName.update({userID:text})
-            Send(update, '名字為：{0}'.format(text))
-            Send(update, '請輸入內文或傳送未壓縮照片', force=True)
+            Reply(update, '名字為：{0}\n請輸入內文或傳送未壓縮照片'.format(text), True)
             userStatus.update({userID:"waitContent"})
             
 
@@ -254,9 +251,9 @@ def getText(update, bot):
             addWord.update({userID:text})
             print(addWord[userID])
             if(userID not in addImg):
-                Send(update, '內文新增完成, 可以重打內文或使用 /end 完成新增', True)
+                Reply(update, '內文新增完成, \n可以重打內文或 /end 完成新增', True)
             else:
-                Send(update, '內文新增完成, 請傳送未壓縮照片或使用 /end 完成新增', True)
+                Reply(update, '內文新增完成,\n 請傳送未壓縮照片或 /end 完成新增', True)
 
         elif state == 'delName':
             sql = sqlite3.connect( getenv("DATABASENAME") ) 
@@ -281,7 +278,7 @@ def getText(update, bot):
             sql.commit()
             cur.close()
             sql.close()
-            Send(update, "完成回報")
+            Reply(update, "完成回報")
             if userID in userStatus:
                 del userStatus[userID]
 
@@ -290,7 +287,7 @@ def getPhoto(update, bot):
     userID = getUserID(update)
     
     if(userStatus[userID]=='waitContent'):
-        Send(update, '不要壓縮，傳檔案', True)
+        Reply(update, '不要壓縮，傳檔案', True)
 
 def getFile(update, bot):
     if(isDos(update)): return
@@ -301,8 +298,7 @@ def getFile(update, bot):
         path = uploadAndGetPhoto(update.message.document.file_id)
         addImg[userID] = path
 
-        Send(update, '照片上傳成功。')
-        Send(update, '可以輸入描述或使用 /end 結束', True)
+        Reply(update, '照片上傳成功。\n可以輸入描述或使用 /end 結束', True)
     
 def endAdd(update, bot):
     if(isDos(update)): return
@@ -315,7 +311,7 @@ def endAdd(update, bot):
         if(userID not in addWord):
             addWord[userID] = ''
         if addImg[userID] == '' and addWord[userID] == '':
-            Send(update, '得先輸入內文或傳送未壓縮圖片', True)
+            Reply(update, '得先輸入內文或傳送未壓縮圖片', True)
             return
 
         command = "insert into Data values('{0}', '{1}', '{2}')".format(addName[userID], addImg[userID], addWord[userID])

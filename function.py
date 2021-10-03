@@ -1,13 +1,25 @@
 from os import getenv
 import sqlite3
-from telegram import ForceReply
+from telegram import ForceReply, InlineKeyboardMarkup
+from updater import updater
 
-def Send(update, msg, force = False):
+def Reply(update, msg, force = False):
     if msg == None or msg == '': return
     if(force):
         update.message.reply_text(msg, reply_markup = ForceReply(selective=force))
     else:
         update.message.reply_text(msg)
+
+def SendButton(update, msg, buttons):
+    if msg==None: msg = ''
+    updater.bot.send_message(update.message.chat_id, "現在有：", reply_markup = InlineKeyboardMarkup(buttons))
+
+def Send(update, msg, force = True):
+    if msg == None or msg == '': return
+    if(force):
+        updater.bot.send_message(update.message.chat_id, msg, reply_markup = ForceReply(selective=force))
+    else:
+        updater.bot.send_message(update.message.chat_id, msg)
 
 def SendPhoto(update, photolink):
     if photolink == None or photolink == '': return

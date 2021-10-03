@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # coding=utf-8
-import os
 from requests.api import delete
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from Command import *
 from dotenv import load_dotenv
+from updater import updater
 
 load_dotenv()
 
 # Main function
 def main():
     
-    updater = Updater( os.getenv("TELEGRAM_TOKEN") )
 
 # 一般指令
 
