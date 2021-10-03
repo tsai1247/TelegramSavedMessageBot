@@ -61,7 +61,6 @@ def main():
     # 按鈕
     updater.dispatcher.add_handler(CallbackQueryHandler(callback))
 
-    AdditionCommand(updater)
 
 # Bot Start
     print("Bot Server Running...")
