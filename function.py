@@ -15,8 +15,7 @@ def SendPhoto(update, photolink):
 
 def SendPhotoWithCaption(update, bot, caption, photolink):
     if photolink == None or photolink == '': return
-    # update.message.reply_photo(photolink, caption = caption)
-    bot.send_message(update.message.chat_id, caption)
+    update.message.reply_photo(photolink, caption = caption)
 
 # sql injection defense
 def pureString(text: str):
