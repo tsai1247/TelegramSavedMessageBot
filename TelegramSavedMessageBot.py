@@ -4,7 +4,6 @@ import os
 from requests.api import delete
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from Command import *
-from AddCommandDeclare import *
 from dotenv import load_dotenv
 
 load_dotenv()
