@@ -210,8 +210,11 @@ def callback(update, bot):
     sql.close()
     print(text)
     for result in allPhoto:
-        SendPhoto(update2, result[0])
-        Send(update2, result[1])
+        if result[0]!='':
+            SendPhotoWithCaption(update2, bot, result[1], result[0])
+        else:
+            SendPhoto(update2, result[0])
+            Send(update2, result[1])
     if(len(allPhoto)==0):
         Send(update2, "查無結果")
 

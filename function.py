@@ -8,10 +8,15 @@ def Send(update, msg, force = False):
         update.message.reply_text(msg, reply_markup = ForceReply(selective=force))
     else:
         update.message.reply_text(msg)
-        
+
 def SendPhoto(update, photolink):
     if photolink == None or photolink == '': return
     update.message.reply_photo(photolink)
+
+def SendPhotoWithCaption(update, bot, caption, photolink):
+    if photolink == None or photolink == '': return
+    # update.message.reply_photo(photolink, caption = caption)
+    bot.send_message(update.message.chat_id, caption)
 
 # sql injection defense
 def pureString(text: str):
