@@ -14,7 +14,7 @@ def SendButton(update, msg, buttons):
     if msg==None: msg = ''
     updater.bot.send_message(update.message.chat_id, "現在有：", reply_markup = InlineKeyboardMarkup(buttons))
 
-def Send(update, msg, force = True):
+def Send(update, msg, force = False):
     if msg == None or msg == '': return
     if(force):
         updater.bot.send_message(update.message.chat_id, msg, reply_markup = ForceReply(selective=force))
@@ -23,9 +23,17 @@ def Send(update, msg, force = True):
 
 def SendPhoto(update, photolink):
     if photolink == None or photolink == '': return
+    updater.bot.send_photo(update.message.chat_id, photolink)
+
+def ReplyPhoto(update, photolink):
+    if photolink == None or photolink == '': return
     update.message.reply_photo(photolink)
 
 def SendPhotoWithCaption(update, bot, caption, photolink):
+    if photolink == None or photolink == '': return
+    updater.bot.send_photo(update.message.chat_id, photolink, caption = caption)
+
+def ReplyPhotoWithCaption(update, bot, caption, photolink):
     if photolink == None or photolink == '': return
     update.message.reply_photo(photolink, caption = caption)
 
