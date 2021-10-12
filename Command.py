@@ -1,3 +1,4 @@
+from logging import exception
 from dosdefence import *
 from os import getenv
 from function import *
@@ -217,6 +218,7 @@ def callback(update, bot):
         Send(update2, "查無結果")
 
 def cancel(update, bot):
+    Send(update, '/add@KaTsuGenshinBot');
     if(isDos(update)): return
     userID = getUserID(update)
     if userID in userStatus:
@@ -282,6 +284,60 @@ def getText(update, bot):
             if userID in userStatus:
                 del userStatus[userID]
 
+        elif state == 'waitLoad':
+            try:
+                tmpdata = text.split(',')
+                data = []
+                i = 0
+                while i < len(tmpdata):
+                    if tmpdata[i][0:2] =='\n\n':
+                        break
+                    data.append(tmpdata[i: i+3])
+                    i += 3
+
+                config = []
+                while i < len(tmpdata):
+                    config.append(tmpdata[i: i+2])
+                    i += 2
+
+                            
+                for i in range(len(data)):
+                    for j in range(len(data[i])):
+                        while len(data[i][j])!=0 and data[i][j][0] == '\n':
+                            data[i][j] = data[i][j][1:]
+                            
+                for i in range(len(config)):
+                    for j in range(len(config[i])):
+                        while len(config[i][j])!=0 and config[i][j][0] == '\n':
+                            config[i][j] = config[i][j][1:]
+                config = config[:-1]
+
+                for i in data:
+                    if len(i)!=3:
+                        raise exception
+                for i in config:
+                    if len(i)!=2:
+                        raise exception
+
+                sql = sqlite3.connect(getenv("DATABASENAME"))
+                sql.execute('delete from Data')
+                sql.commit()
+                sql.execute('delete from Config')
+                sql.commit()
+                for i in data:
+                    sql.execute("insert into Data values('{0}', '{1}', '{2}')".format(i[0], i[1], i[2]))
+                    sql.commit()
+                    
+                for i in config:
+                    sql.execute("insert into Config values('{0}', '{1}')".format(i[0], i[1]))
+                    sql.commit()
+                sql.close()
+
+                Send(update, '還原完成')
+            except:
+                Send(update, '未能成功還原，也許是哪裡出問題了')
+
+
 def getPhoto(update, bot):
     if(isDos(update)): return
     userID = getUserID(update)
@@ -328,3 +384,43 @@ def endAdd(update, bot):
         del addName[userID]
         del addImg[userID]
         del addWord[userID]
+
+def dump(update, bot):
+    if(isDos(update)): return
+    userID = getUserID(update)
+    if not isDeveloper(userID, False): return
+    
+    sql = sqlite3.connect( getenv("DATABASENAME") ) 
+    cur = sql.cursor()
+    cur.execute('select * from Data')
+    data = cur.fetchall()
+    ret = ''
+    for i in data:
+        for j in i:
+            ret += j + ','
+        ret += '\n'
+    cur.close()
+
+    cur = sql.cursor()
+    cur.execute('select * from Config')
+    data = cur.fetchall()
+    ret += '\n'
+    for i in data:
+        for j in i:
+            ret += j + ','
+        ret += '\n'
+    cur.close()
+    sql.close()
+
+    Send(update, ret)
+    Send(update, '請妥善保管上則訊息\n使用 /load 可以還原備份檔')
+
+def load(update, bot):
+    if(isDos(update)): return
+    userID = getUserID(update)
+    if not isDeveloper(userID, False): return
+
+    userStatus.update({userID:"waitLoad"})
+    Reply(update, '請輸入還原訊息', True)
+    
+
