@@ -108,23 +108,30 @@ def getRandomReply(update, bot):
         userStatus.update({userID:"waitDetail"})
         Reply(update, "輸入問題", force=True)
     else:
-        randomReply(update)
+        randomReply(update, text[1])
 
-def randomReply(update):
+def randomReply(update, text):
     userID = getUserID(update)
+    print(text)
+    if '?' in text and ':' in '?'.join(text.split('?')[1:]):
 
-    againRange = float(GetConfig('askAgainRange'))
-    probability = random.random()
-    successful = random.random()-probability
+        answers = '?'.join(text.split('?')[1:]).split(':')
+        retIndex = random.randint(0, len(answers)-1)
+        Reply(update, answers[retIndex])
 
-    if(successful<-againRange):
-        Reply(update, "Yes")
-    elif (successful>againRange):
-        Reply(update, "No")
     else:
-        userStatus.update({userID:"waitDetail"})
-        Reply(update, "Ask me again", True)
-        return
+        againRange = float(GetConfig('askAgainRange'))
+        probability = random.random()
+        successful = random.random()-probability
+
+        if(successful<-againRange):
+            Reply(update, "Yes")
+        elif (successful>againRange):
+            Reply(update, "No")
+        else:
+            userStatus.update({userID:"waitDetail"})
+            Reply(update, "Ask me again", True)
+            return
         
     if userID in userStatus:
         del userStatus[userID]
@@ -271,7 +278,7 @@ def getText(update, bot):
 
             del userStatus[userID]
         elif state == 'waitDetail':
-            randomReply(update)
+            randomReply(update, text)
 
         elif state == 'waitReport':
             sql = sqlite3.connect( 'Report.db' ) 
