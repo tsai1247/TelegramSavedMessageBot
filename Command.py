@@ -225,7 +225,6 @@ def callback(update, bot):
         Send(update2, "查無結果")
 
 def cancel(update, bot):
-    Send(update, '/add@KaTsuGenshinBot');
     if(isDos(update)): return
     userID = getUserID(update)
     if userID in userStatus:
