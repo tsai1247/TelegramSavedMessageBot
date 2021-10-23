@@ -29,13 +29,24 @@ def ReplyPhoto(update, photolink):
     if photolink == None or photolink == '': return
     update.message.reply_photo(photolink)
 
-def SendPhotoWithCaption(update, bot, caption, photolink):
+def SendPhotoWithCaption(update, caption, photolink):
     if photolink == None or photolink == '': return
     updater.bot.send_photo(update.message.chat_id, photolink, caption = caption)
 
-def ReplyPhotoWithCaption(update, bot, caption, photolink):
+def ReplyPhotoWithCaption(update, caption, photolink):
     if photolink == None or photolink == '': return
     update.message.reply_photo(photolink, caption = caption)
+
+
+def SendResult(update, data):
+    for result in data:
+        if result[0]!='':
+            SendPhotoWithCaption(update, result[1], result[0])
+        else:
+            SendPhoto(update, result[0])
+            Send(update, result[1])
+    if(len(data)==0):
+        Send(update, "查無結果")
 
 # sql injection defense
 def pureString(text: str):

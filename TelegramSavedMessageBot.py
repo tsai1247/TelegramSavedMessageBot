@@ -36,6 +36,7 @@ def main():
 
     # 隨機回覆小助手
     updater.dispatcher.add_handler(CommandHandler('conch', getRandomReply))
+    updater.dispatcher.add_handler(CommandHandler('random', randomList))
 
     # 指令取消
     updater.dispatcher.add_handler(CommandHandler('cancel', cancel))

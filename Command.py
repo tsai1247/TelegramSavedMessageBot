@@ -1,6 +1,6 @@
 from logging import exception
 from dosdefence import *
-from os import getenv
+from os import getenv, name
 from function import *
 import sqlite3
 from interact_with_imgur import uploadAndGetPhoto
@@ -110,6 +110,29 @@ def getRandomReply(update, bot):
     else:
         randomReply(update, text[1])
 
+def randomList(update, bot):
+    if(isDos(update)): return
+    sql = sqlite3.connect( getenv("DATABASENAME") )
+    cur = sql.cursor()
+    
+    cur.execute("Select Name from Data")
+
+    NameList = cur.fetchall()
+
+    if(len(NameList)<1):
+        Send(update, '目前沒有資料，請使用 /add 來新增')
+    else:
+        targetNum = random.randint(0, len(NameList)-1)
+        Name = NameList[targetNum][0]
+        print("Select * from Data where Name = '{0}'".format(Name))
+        cur.execute("Select Image, Word from Data where Name = '{0}'".format(Name))
+        DataList = cur.fetchall()
+        Send(update, Name)
+        SendResult(update, DataList)
+    cur.close()
+    sql.close()
+
+
 def randomReply(update, text):
     userID = getUserID(update)
     print(text)
@@ -215,14 +238,17 @@ def callback(update, bot):
     cur.close()
     sql.close()
     print(text)
+    
     for result in allPhoto:
         if result[0]!='':
-            SendPhotoWithCaption(update2, bot, result[1], result[0])
+            SendPhotoWithCaption(update2, result[1], result[0])
         else:
             SendPhoto(update2, result[0])
             Send(update2, result[1])
     if(len(allPhoto)==0):
         Send(update2, "查無結果")
+        
+    # SendResult(update, allPhoto)
 
 def cancel(update, bot):
     if(isDos(update)): return
