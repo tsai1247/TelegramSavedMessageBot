@@ -12,6 +12,7 @@ userStatus = {}
 addName = {}
 addImg = {}
 addWord = {}
+blacklist = ['523474561']
 
 userUpdate = {}
 
@@ -136,6 +137,11 @@ def randomList(update, bot):
 def randomReply(update, text):
     userID = getUserID(update)
     print(text)
+    
+    if userID in blacklist:
+        Reply(update, "掰", True)
+        return
+    
     if '?' in text and ':' in '?'.join(text.split('?')[1:]):
 
         answers = '?'.join(text.split('?')[1:]).split(':')
