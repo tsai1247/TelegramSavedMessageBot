@@ -155,7 +155,7 @@ def randomReply(update, text):
             userStatus.update({userID:"waitDetail"})
             Reply(update, "Ask me again", True)
             return
-        
+            
     if userID in userStatus:
         del userStatus[userID]
 
@@ -267,6 +267,12 @@ def cancel(update, bot):
     Reply(update, "指令取消。")
 
 def getText(update, bot):
+    if update.message == None:
+        try:
+            update.edited_message.reply_text("偷改，抓")
+        except:
+            pass
+        return
     if(isDos(update)): return
     userID = getUserID(update)
     text = update.message.text
