@@ -13,6 +13,7 @@ def reloadDosParam():
     dos_maximum = int(GetConfig('dos_maximum'))
 
 def isDos(update):
+    if update.message == None: return
     chat_id = str(update.message.from_user.id)
     date = update.message.date
 

@@ -83,5 +83,6 @@ def isDeveloper(userID, allowOpen = True):
     else:
         return str(userID) in developer or developer == '' or developer == '*'
 
-def getUserID(update):
+def getUserID(update): 
+    if update.message == None: return None
     return update.message.from_user.id
