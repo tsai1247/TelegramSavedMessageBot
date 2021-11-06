@@ -139,7 +139,7 @@ def randomReply(update, text):
     print(text)
     
     if userID in blacklist:
-        Reply(update, "掰", True)
+        Reply(update, "掰")
         return
     
     if '?' in text and ':' in '?'.join(text.split('?')[1:]):
