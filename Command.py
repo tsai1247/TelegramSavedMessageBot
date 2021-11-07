@@ -1,12 +1,12 @@
 from logging import exception
 from dosdefence import *
-from os import getenv, name
+from os import getenv
 from function import *
 import sqlite3
 from interact_with_imgur import uploadAndGetPhoto
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 import random
-from permissionCheck import IsCommandAllowed
+from permissionCheck import Compare, IsCommandAllowed
 
 # preparation
 userStatus = {}
@@ -468,4 +468,57 @@ def load(update, bot):
     userStatus.update({userID:"waitLoad"})
     Reply(update, '請輸入還原訊息', True)
     
+def promote(update, bot):
+    print('promoting')
+    if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
+    userIDUp = str(getUserID(update))
+    userIDDown = update.message.text.split(' ')
+    if len(userIDDown)<2:
+        Reply(update, '未輸入對象')
+        return
+    userIDDown = userIDDown[1]
 
+    if(Compare(userIDUp, userIDDown)):
+        increase(update, userIDDown)
+    else:
+        Reply(update, '權限不足')
+
+def demote(update, bot):
+    if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
+    userIDUp = str(getUserID(update))
+    userIDDown = update.message.text.split(' ')
+    if len(userIDDown)<2:
+        Reply(update, '未輸入對象')
+        return
+    userIDDown = userIDDown[1]
+
+    if(Compare(userIDUp, userIDDown)):
+        increase(update, userIDDown, -1)
+    else:
+        Reply(update, '權限不足')
+
+        
+def increase(update, userID, num = 1):
+    sql = sqlite3.connect( 'Permission.db' )
+    cur = sql.cursor()
+    cur.execute("Select level from Data where key = '{}'".format(userID))
+    data = cur.fetchall()
+
+    goalLevel = 1
+    if len(data)==1:
+        goalLevel = data[0][0] + num
+        if goalLevel<1:
+            goalLevel = 1
+        cur.execute("Update Data set level = {} where key = '{}'".format(goalLevel, userID))
+    else:
+        goalLevel = goalLevel + num
+        if goalLevel<1:
+            goalLevel = 1
+        cur.execute("Insert into Data values('{}', {}, 'P')".format(userID, goalLevel))
+
+    sql.commit()
+    cur.close()
+    sql.close()
+    Send(update, '現在 {} 階級為 {}'.format(userID, goalLevel))

@@ -33,3 +33,9 @@ def IsCommandAllowed(update, command = ''):
         return True
     else:
         return False
+
+def Compare(useridUp, useridDown, diff = 2):
+    if ( GetPermission(useridUp) - GetPermission(useridDown) ) >= diff:
+        return True
+    else:
+        return False

@@ -44,12 +44,16 @@ def main():
     # 回報
     updater.dispatcher.add_handler(CommandHandler('report', report))
     updater.dispatcher.add_handler(CommandHandler('getReport', getReport))
-
+    
+    # 升級權限
+    updater.dispatcher.add_handler(CommandHandler('promote', promote))
+    updater.dispatcher.add_handler(CommandHandler('demote', demote))
+    
     # 備份與還原
     updater.dispatcher.add_handler(CommandHandler('dump', dump))
     updater.dispatcher.add_handler(CommandHandler('load', load))
     updater.dispatcher.add_handler(CommandHandler('restore', load))
-    
+
 
 # 其他類型回覆
 
