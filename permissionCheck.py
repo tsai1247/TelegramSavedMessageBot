@@ -17,7 +17,10 @@ def GetPermission(keyword):
     sql.close()
 
     if len(data)==0:
-        return 1
+        try:
+            return int(getenv("DEFAULTLEVEL"))
+        except:
+            return 1
     else:
         return data[0][0]
 
