@@ -3,7 +3,7 @@ from function import getUserID
 import sqlite3
 
 def GetPermission(keyword):
-    if keyword in getenv("DEVELOPER_ID"):
+    if keyword in getenv("DEVELOPER_ID").split(','):
         return 9
 
     sql = sqlite3.connect( 'Permission.db' )
@@ -27,7 +27,7 @@ def IsCommandAllowed(update, command = ''):
         command = update.message.text
     command = command.split(' ')[0].split('@')[0].split('/')[1]
 
-    userId = getUserID(update)
+    userId = str(getUserID(update))
 
     if GetPermission(userId)>=GetPermission(command):
         return True
