@@ -6,6 +6,7 @@ import sqlite3
 from interact_with_imgur import uploadAndGetPhoto
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 import random
+from permissionCheck import IsCommandAllowed
 
 # preparation
 userStatus = {}
@@ -17,24 +18,27 @@ userUpdate = {}
 
 def startbot(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     Send(update, "hihi, 我是{0}".format(GetConfig("name")))
     Send(update, "按 /help 取得說明")
 
 def help(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     Send(update, GetConfig("helpText"))
 
 def report(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
     userStatus.update({userID:"waitReport"})
     Reply(update, "輸入回報", force=True)
 
 def getReport(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
     
-    if(not isDeveloper(userID, False)): return
     sql = sqlite3.connect( 'Report.db' )
     cur = sql.cursor()
     cur.execute("Select * from reports")
@@ -44,6 +48,7 @@ def getReport(update, bot):
 
 def list(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
     sql = sqlite3.connect( getenv("DATABASENAME") )
     cur = sql.cursor()
@@ -72,11 +77,9 @@ def list(update, bot):
 
 def setVal(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
 
-    if(not isDeveloper(userID, False)): return
-    
-    
     text = ' '.join(update.message.text.split(' ')[1:])
 
     try:
@@ -93,15 +96,15 @@ def setVal(update, bot):
 
 def add(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
-    
-    if(not isDeveloper(userID)): return
     
     userStatus.update({userID:"waitName"})
     Reply(update, "輸入名字", force=True)
 
 def getRandomReply(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
     text = update.message.text.split(' ')
     if len(text)==1:
@@ -112,6 +115,7 @@ def getRandomReply(update, bot):
 
 def randomList(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     sql = sqlite3.connect( getenv("DATABASENAME") )
     cur = sql.cursor()
     
@@ -161,6 +165,7 @@ def randomReply(update, text):
 
 def finding(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
     text = update.message.text.split(' ')
     if(len(text)==1):
@@ -210,8 +215,8 @@ def delete(update, bot):
     if(isDos(update)): 
         print(dos_defence)
         return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
-    if(not isDeveloper(userID)): return
 
     userStatus.update({userID:"delName"})
     Reply(update, "輸入名字", force=True)
@@ -252,6 +257,7 @@ def callback(update, bot):
 
 def cancel(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
     if userID in userStatus:
         del userStatus[userID]
@@ -396,6 +402,7 @@ def getFile(update, bot):
     
 def endAdd(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
     if(userStatus[userID]=='waitContent'):
         sql = sqlite3.connect( getenv("DATABASENAME") ) 
@@ -425,8 +432,8 @@ def endAdd(update, bot):
 
 def dump(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
-    if not isDeveloper(userID, False): return
     
     sql = sqlite3.connect( getenv("DATABASENAME") ) 
     cur = sql.cursor()
@@ -455,8 +462,8 @@ def dump(update, bot):
 
 def load(update, bot):
     if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
     userID = getUserID(update)
-    if not isDeveloper(userID, False): return
 
     userStatus.update({userID:"waitLoad"})
     Reply(update, '請輸入還原訊息', True)
