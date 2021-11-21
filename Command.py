@@ -1,4 +1,6 @@
 from logging import exception
+
+from telegram.utils.helpers import escape_markdown
 from dosdefence import *
 from os import getenv
 from function import *
@@ -304,11 +306,16 @@ def getText(update, bot):
         elif state == 'delName':
             sql = sqlite3.connect( getenv("DATABASENAME") ) 
             cur = sql.cursor()
-            cur.execute("delete from Data where Name = '{0}'".format(text))
-            sql.commit()
+            cur.execute("select * from Data where Name = '{}'".format(text))
+            data = cur.fetchall()
+            if len(data)==0:
+                Send(update, "查無資料")
+            else:
+                cur.execute("delete from Data where Name = '{0}' and Image = '{1}' and Word = '{2}'".format(text, data[0][1], data[0][2]))
+                sql.commit()
+                Send(update, "刪除最舊一筆內容")
             cur.close()
             sql.close()
-            Send(update, "刪除 {0}".format(text))
             del userStatus[userID]
         elif state == 'findName':
             findBody(update, text)
