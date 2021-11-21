@@ -393,10 +393,13 @@ def getFile(update, bot):
     if(isDos(update)): return
     userID = getUserID(update)
 
-    if(userStatus[userID]=='waitContent' and userID not in addImg):
+    if(userStatus[userID]=='waitContent'):
         Send(update, '上傳中...')
         path = uploadAndGetPhoto(update.message.document.file_id)
-        addImg[userID] = path
+        if userID in addImg:
+            addImg[userID].append(path)
+        else:
+            addImg[userID] = [path]
 
         Reply(update, '照片上傳成功。\n可以輸入描述或使用 /end 結束', True)
     
@@ -408,16 +411,20 @@ def endAdd(update, bot):
         sql = sqlite3.connect( getenv("DATABASENAME") ) 
         cur = sql.cursor()
         if(userID not in addImg):
-            addImg[userID] = ''
+            addImg[userID] = []
         if(userID not in addWord):
             addWord[userID] = ''
-        if addImg[userID] == '' and addWord[userID] == '':
+        if addImg[userID] == [] and addWord[userID] == '':
             Reply(update, '得先輸入內文或傳送未壓縮圖片', True)
             return
+        
+        if addWord[userID] != '':
+            command = "insert into Data values('{0}', '{1}', '{2}')".format(addName[userID], '', addWord[userID])
+            cur.execute(command)
+        for i in addImg[userID]:
+            command = "insert into Data values('{0}', '{1}', '{2}')".format(addName[userID], i,'')
+            cur.execute(command)
 
-        command = "insert into Data values('{0}', '{1}', '{2}')".format(addName[userID], addImg[userID], addWord[userID])
-
-        cur.execute(command)
         sql.commit()
 
         cur.close()
