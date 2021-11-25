@@ -1,4 +1,5 @@
 from logging import exception
+from typing import List
 
 from telegram.utils.helpers import escape_markdown
 from dosdefence import *
@@ -6,15 +7,18 @@ from os import getenv
 from function import *
 import sqlite3
 from interact_with_imgur import uploadAndGetPhoto
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto, chat, replymarkup, user
 import random
 from permissionCheck import Compare, IsCommandAllowed
+import telepot
 
 # preparation
 userStatus = {}
 addName = {}
 addImg = {}
 addWord = {}
+randomData = {}
+
 
 userUpdate = {}
 
@@ -115,9 +119,11 @@ def getRandomReply(update, bot):
     else:
         randomReply(update, text[1])
 
-def randomList(update, bot):
+def randomList(update, bot, userid = None):
     if(isDos(update)): return
-    if(not IsCommandAllowed(update)): return
+    # if(not IsCommandAllowed(update)): return
+    if userid == None:
+        userid = getUserID(update)
     sql = sqlite3.connect( getenv("DATABASENAME") )
     cur = sql.cursor()
     
@@ -133,8 +139,19 @@ def randomList(update, bot):
         print("Select * from Data where Name = '{0}'".format(Name))
         cur.execute("Select Image, Word from Data where Name = '{0}'".format(Name))
         DataList = cur.fetchall()
-        Send(update, Name)
-        SendResult(update, DataList)
+        # Send(update, Name)
+        messages = []
+        
+        buttons = []
+        buttons.append([InlineKeyboardButton("換一個", callback_data = "random {0}".format(userid))])
+        
+        messages.append(Send(update, Name, chat_id = userid))
+        messages.append(SendResult(update, DataList, reply_markup = InlineKeyboardMarkup(buttons), chat_id = userid))
+        print(messages)
+        
+
+        randomData.update({userid:messages})
+
     cur.close()
     sql.close()
 
@@ -225,9 +242,30 @@ def delete(update, bot):
 
 def callback(update, bot):
     replyText = update.callback_query.data.split(" ")
-    userID = int(replyText[-1])
+    try:
+        userID = int(replyText[-1])
+    except:
+        try:
+            update.callback_query.edit_message_text('按鈕已過期')
+        except:
+            update.callback_query.edit_message_caption('按鈕已過期')
+        return
+
+    if replyText[0] == 'random' and userID in randomData:
+        updater.bot.delete_message(chat_id = randomData[userID][0].chat_id, message_id = randomData[userID][0].message_id) # delete text
+        for i in randomData[userID][1]: # delete photo
+            updater.bot.delete_message(chat_id = i.chat_id, message_id = i.message_id)
+
+        del randomData[userID]
+        randomList(update, bot, userID)
+        return
+
     if userID not in userUpdate:
-        update.callback_query.edit_message_text('按鈕已過期')
+        try:
+            update.callback_query.edit_message_text('按鈕已過期')
+        except:
+            update.callback_query.edit_message_caption('按鈕已過期')
+            
         return
     
     text = ' '.join(replyText[:-1])
