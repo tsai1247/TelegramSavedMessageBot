@@ -53,6 +53,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('dump', dump))
     updater.dispatcher.add_handler(CommandHandler('load', load))
     updater.dispatcher.add_handler(CommandHandler('restore', load))
+    updater.dispatcher.add_handler(CommandHandler('backup', auto_backup))
 
 
 # 其他類型回覆

@@ -7,10 +7,9 @@ from os import getenv
 from function import *
 import sqlite3
 from interact_with_imgur import uploadAndGetPhoto
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton, InputMediaPhoto, chat, replymarkup, user
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 import random
 from permissionCheck import Compare, IsCommandAllowed
-import telepot
 
 # preparation
 userStatus = {}
@@ -18,9 +17,19 @@ addName = {}
 addImg = {}
 addWord = {}
 randomData = {}
-
-
 userUpdate = {}
+
+def GetBackupID():
+    sql = sqlite3.connect( "AutoBackUp.db" )
+    cur = sql.cursor()
+    cur.execute("Select * from Data")
+    data = cur.fetchall()
+    BackupID = data[0][0]
+    if BackupID == '':
+        BackupID = None
+    cur.close()
+    sql.close()
+    return BackupID
 
 def startbot(update, bot):
     if(isDos(update)): return
@@ -96,6 +105,9 @@ def setVal(update, bot):
         
         reloadDosParam()
         Send(update, "指令完成")
+        
+        if GetBackupID() != None:
+            dump(update, bot, auto = True)
     except:
         Send(update, "指令似乎哪裡錯了")
     return
@@ -363,6 +375,10 @@ def getText(update, bot):
             cur.close()
             sql.close()
             del userStatus[userID]
+            
+            if GetBackupID() != None:
+                dump(update, bot, auto = True)
+
         elif state == 'findName':
             findBody(update, text)
 
@@ -489,11 +505,19 @@ def endAdd(update, bot):
         del addName[userID]
         del addImg[userID]
         del addWord[userID]
+    
+    if GetBackupID() != None:
+        dump(update, bot, auto = True)
 
-def dump(update, bot):
+def dump(update, bot, auto = False):
     if(isDos(update)): return
-    if(not IsCommandAllowed(update)): return
-    userID = getUserID(update)
+    if(not auto and not IsCommandAllowed(update)): return
+
+    if(auto):
+        userID = GetBackupID()
+        Send(update, "自動備份檔：", chat_id=userID)
+    else:
+        userID = getUserID(update)
     
     sql = sqlite3.connect( getenv("DATABASENAME") ) 
     cur = sql.cursor()
@@ -517,8 +541,8 @@ def dump(update, bot):
     cur.close()
     sql.close()
 
-    Send(update, ret)
-    Send(update, '請妥善保管上則訊息\n使用 /load 可以還原備份檔')
+    Send(update, ret, chat_id=userID)
+    Send(update, '請妥善保管上則訊息\n使用 /load 可以還原備份檔', chat_id=userID)
 
 def load(update, bot):
     if(isDos(update)): return
@@ -527,7 +551,29 @@ def load(update, bot):
 
     userStatus.update({userID:"waitLoad"})
     Reply(update, '請輸入還原訊息', True)
+
+def auto_backup(update, bot):
+    if(isDos(update)): return
+    if(not IsCommandAllowed(update)): return
+
+    text = update.message.text.split(' ')
     
+    if len(text) > 1 and (text[1] == '0' or text[1].lower()=='null'):
+        sql = sqlite3.connect( "AutoBackUp.db" ) 
+        cur = sql.cursor()
+        cur.execute("Update Data set TargetID = NULL")
+        sql.commit()
+        sql.close()
+        Send(update, "已停止自動備份")
+    else:
+        roomID = getRoomID(update)
+        sql = sqlite3.connect( "AutoBackUp.db" ) 
+        cur = sql.cursor()
+        cur.execute("Update Data set TargetID = '{}'".format(roomID))
+        sql.commit()
+        sql.close()
+        Send(update, "將會在此聊天室自動備份")
+
 def promote(update, bot):
     print('promoting')
     if(isDos(update)): return

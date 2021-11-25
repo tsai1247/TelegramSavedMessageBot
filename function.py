@@ -12,18 +12,20 @@ def Reply(update, msg, force = False):
 
 def SendButton(update, msg, buttons, chat_id = None):
     if msg==None: msg = ''
-    try:
-        chat_id = update.message.chat_id
-    except:
-        pass
+    if chat_id == None:
+        try:
+            chat_id = update.message.chat_id
+        except:
+            pass
     return updater.bot.send_message(chat_id, msg, reply_markup = InlineKeyboardMarkup(buttons))
 
 def Send(update, msg, force = False, chat_id = None):
     if msg == None or msg == '': return
-    try:
-        chat_id = update.message.chat_id
-    except:
-        pass
+    if chat_id == None:
+        try:
+            chat_id = update.message.chat_id
+        except:
+            pass
 
     if(force):
         return updater.bot.send_message(chat_id, msg, reply_markup = ForceReply(selective=force))
