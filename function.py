@@ -100,3 +100,7 @@ def GetConfig(name: str):
 def getUserID(update): 
     if update.message == None: return None
     return update.message.from_user.id
+
+def getRoomID(update): 
+    if update.message == None: return None
+    return update.message.chat_id

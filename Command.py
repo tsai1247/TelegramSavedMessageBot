@@ -124,6 +124,11 @@ def randomList(update, bot, userid = None):
     # if(not IsCommandAllowed(update)): return
     if userid == None:
         userid = getUserID(update)
+        roomid = getRoomID(update)
+    else:
+        roomid = randomData[userid][2]
+        del randomData[userid]
+
     sql = sqlite3.connect( getenv("DATABASENAME") )
     cur = sql.cursor()
     
@@ -145,8 +150,9 @@ def randomList(update, bot, userid = None):
         buttons = []
         buttons.append([InlineKeyboardButton("換一個", callback_data = "random {0}".format(userid))])
         
-        messages.append(Send(update, Name, chat_id = userid))
-        messages.append(SendResult(update, DataList, reply_markup = InlineKeyboardMarkup(buttons), chat_id = userid))
+        messages.append(Send(update, Name, chat_id = roomid))
+        messages.append(SendResult(update, DataList, reply_markup = InlineKeyboardMarkup(buttons), chat_id = roomid))
+        messages.append(roomid)
         print(messages)
         
 
@@ -245,27 +251,23 @@ def callback(update, bot):
     try:
         userID = int(replyText[-1])
     except:
-        try:
-            update.callback_query.edit_message_text('按鈕已過期')
-        except:
-            update.callback_query.edit_message_caption('按鈕已過期')
+        buttonTimeOUt(update)
         return
 
     if replyText[0] == 'random' and userID in randomData:
+        if randomData[userID][2] != update.callback_query.message.chat_id:
+            buttonTimeOUt(update)
+            return
+
         updater.bot.delete_message(chat_id = randomData[userID][0].chat_id, message_id = randomData[userID][0].message_id) # delete text
         for i in randomData[userID][1]: # delete photo
             updater.bot.delete_message(chat_id = i.chat_id, message_id = i.message_id)
 
-        del randomData[userID]
         randomList(update, bot, userID)
         return
 
     if userID not in userUpdate:
-        try:
-            update.callback_query.edit_message_text('按鈕已過期')
-        except:
-            update.callback_query.edit_message_caption('按鈕已過期')
-            
+        buttonTimeOUt(update)
         return
     
     text = ' '.join(replyText[:-1])
@@ -294,6 +296,12 @@ def callback(update, bot):
         Send(update2, "查無結果")
         
     # SendResult(update, allPhoto)
+
+def buttonTimeOUt(update):
+    if update.callback_query.message.text == None:
+        update.callback_query.edit_message_caption('按鈕已過期')
+    else:
+        update.callback_query.edit_message_text('按鈕已過期')
 
 def cancel(update, bot):
     if(isDos(update)): return
