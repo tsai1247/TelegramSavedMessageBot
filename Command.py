@@ -282,6 +282,7 @@ def callback(update, bot):
             buttonTimeOUt(update)
             return
         randomData[userID][1][-1].edit_reply_markup(None)
+        del randomData[userID]
         return
 
     if userID not in userUpdate:
