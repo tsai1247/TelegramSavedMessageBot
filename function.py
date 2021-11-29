@@ -19,7 +19,7 @@ def SendButton(update, msg, buttons, chat_id = None):
             pass
     return updater.bot.send_message(chat_id, msg, reply_markup = InlineKeyboardMarkup(buttons))
 
-def Send(update, msg, force = False, chat_id = None):
+def Send(update, msg, force = False, reply_markup = None, chat_id = None):
     if msg == None or msg == '': return
     if chat_id == None:
         try:
@@ -29,8 +29,11 @@ def Send(update, msg, force = False, chat_id = None):
 
     if(force):
         return updater.bot.send_message(chat_id, msg, reply_markup = ForceReply(selective=force))
+    elif reply_markup != None:
+        return updater.bot.send_message(chat_id, msg, reply_markup = reply_markup)
     else:
         return updater.bot.send_message(chat_id, msg)
+    
 
 def SendPhoto(update, photolink):
     if photolink == None or photolink == '': return
@@ -58,14 +61,17 @@ def SendResult(update, data, reply_markup = None, chat_id = None):
     ret = []
     for i in range(len(data)):
     # for data[i] in data:
-        if data[i][0]!='':
+        if data[i][0]!='': # photo != None
             if reply_markup != None and i+1 == len(data):
                 ret.append(SendPhotoWithCaption(update, data[i][1], data[i][0], reply_markup, chat_id))
             else:
                 ret.append(SendPhotoWithCaption(update, data[i][1], data[i][0], chat_id = chat_id))
         else:
-            SendPhoto(update, data[i][0])
-            Send(update, data[i][1])
+            if i+1 == len(data):
+                ret.append(Send(update, data[i][1], False, reply_markup, chat_id))
+            else:
+                ret.append(Send(update, data[i][1], chat_id = chat_id))
+            
     if(len(data)==0):
         Send(update, "查無結果")
     return ret

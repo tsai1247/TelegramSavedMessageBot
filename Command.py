@@ -160,8 +160,8 @@ def randomList(update, bot, userid = None):
         messages = []
         
         buttons = []
-        buttons.append([InlineKeyboardButton("換一個", callback_data = "random {0}".format(userid))])
-        
+        buttons.append([InlineKeyboardButton(s[0], callback_data = "{0} {1}".format(s[1], userid)) for s in [ ("換一個", "random"), ("就這個了", "endRandom") ]])
+
         messages.append(Send(update, Name, chat_id = roomid))
         messages.append(SendResult(update, DataList, reply_markup = InlineKeyboardMarkup(buttons), chat_id = roomid))
         messages.append(roomid)
@@ -276,6 +276,12 @@ def callback(update, bot):
             updater.bot.delete_message(chat_id = i.chat_id, message_id = i.message_id)
 
         randomList(update, bot, userID)
+        return
+    elif replyText[0] == 'endRandom' and userID in randomData:
+        if randomData[userID][2] != update.callback_query.message.chat_id:
+            buttonTimeOUt(update)
+            return
+        randomData[userID][1][-1].edit_reply_markup(None)
         return
 
     if userID not in userUpdate:
